@@ -2,7 +2,7 @@
   "ignition": {
     "config": {
       "replace": {
-        "source": "https://raw.githubusercontent.com/mdavistffhrtporg/fcos_pub/main/fcos.ign"
+        "source": "https://raw.githubusercontent.com/mdavistffhrtporg/fcos_pub/main/fcos2.ign"
       }
     },
     "version": "3.4.0"
