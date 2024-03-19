@@ -1,5 +1,9 @@
 ﻿variant: fcos
 version: 1.5.0
+ignition:
+  config:
+    replace:
+      source: https://raw.githubusercontent.com/mdavistffhrtporg/fcos_pub/main/fcos.ign
 passwd:
   users:
     - name: core
