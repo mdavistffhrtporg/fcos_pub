@@ -1,9 +1,5 @@
-﻿variant: fcos
+variant: fcos
 version: 1.5.0
-ignition:
-  config:
-    replace:
-      source: https://raw.githubusercontent.com/mdavistffhrtporg/fcos_pub/main/fcos.ign
 passwd:
   users:
     - name: core
@@ -29,10 +25,9 @@ storage:
        - label: nvme_data
          size_mib: 0
     - device: /dev/sdb
-      wipe_table: true
+      wipe_table: false
       partitions:
        - label: root
-         size_mib: 0
     - device: /dev/sdd
       wipe_table: true
       partitions:
