@@ -1,0 +1,67 @@
+variant: fcos
+version: 1.5.0
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKkTCV0ikSRa72asQy57y01KOiIoWeQgLb9bDSo+3tbr
+storage:
+  links:
+    - path: /etc/localtime
+      target: ../usr/share/zoneinfo/America/Chicago
+  files:
+    - path: /etc/hostname
+      mode: 0644
+      contents:
+        inline: fcos
+  disks:
+    - device: /dev/nvme0n1
+      wipe_table: true
+      partitions:
+       - label: swap
+         size_mib: 32768
+         start_mib: 0
+         type_guid: 0657fd6d-a4ab-43c4-84e5-0933c84b4f4f
+       - label: nvme_data
+         size_mib: 0
+    - device: /dev/sdd
+      wipe_table: true
+      partitions:
+       - label: log
+         size_mib: 0
+    - device: /dev/sda
+      wipe_table: true
+      partitions:
+       - label: var
+         size_mib: 0
+    - device: /dev/sdc
+      wipe_table: true
+      partitions:
+       - label: containters
+         size_mib: 0
+  filesystems:
+    - device: /dev/disk/by-partlabel/swap
+      format: swap
+      wipe_filesystem: true
+    - device: /dev/disk/by-partlabel/root
+      format: xfs
+    - path: /nvme_data
+      device: /dev/disk/by-partlabel/nvme_data
+      format: xfs
+      wipe_filesystem: false
+      with_mount_unit: true
+    - path: /var/log
+      device: /dev/disk/by-partlabel/log
+      format: xfs
+      wipe_filesystem: false
+      with_mount_unit: true
+    - path: /var
+      device: /dev/disk/by-partlabel/var
+      format: xfs
+      wipe_filesystem: false
+      with_mount_unit: true
+    - path: /var/lib/containers
+      device: /dev/disk/by-partlabel/containers
+      format: xfs
+      wipe_filesystem: false
+      with_mount_unit: true
