@@ -31,6 +31,18 @@
         "wipeTable": true
       },
       {
+        "device": "/dev/sdb",
+        "partitions": [
+          {
+            "label": "root",
+            "number": 4,
+            "resize": true,
+            "sizeMiB": 32768
+          }
+        ],
+        "wipeTable": false
+      },
+      {
         "device": "/dev/sdd",
         "partitions": [
           {
