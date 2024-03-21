@@ -31,11 +31,11 @@ storage:
        - label: root-2
          size_mib: 0
     - device: /dev/sda
+      wipe_table: true
       partitions:
        - label: var-1
          size_mib: 0
     - device: /dev/sdc
-
       wipe_table: true
       partitions:
        - label: var-2
@@ -54,14 +54,8 @@ storage:
   filesystems:
     - device: /dev/md/root
       format: btrfs
-      wipe_filesystem: true
     - device: /dev/md/md-var
       path: /var/var
       format: btrfs
-      wipe_filesystem: true
-      with_mount_unit: true
-    - device: /dev/disk/by-partlabel/swap
-      format: swap
-      wipe_filesystem: true
-      label: swap
+      wipe_filesystem: false
       with_mount_unit: true
