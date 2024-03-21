@@ -27,6 +27,7 @@ storage:
     - device: /dev/sdb
       wipe_table: false
       partitions:
+       - number: 4
        - label: root
     - device: /dev/sdd
       wipe_table: true

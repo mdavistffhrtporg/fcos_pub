@@ -15,38 +15,48 @@
   "storage": {
     "disks": [
       {
-        "device": "/dev/nvme0n1",
+        "device": "/dev/sdb",
         "partitions": [
           {
-            "label": "swap",
-            "sizeMiB": 32768,
-            "startMiB": 0,
-            "typeGuid": "0657fd6d-a4ab-43c4-84e5-0933c84b4f4f"
+            "label": "bios-1",
+            "sizeMiB": 1,
+            "typeGuid": "21686148-6449-6E6F-744E-656564454649"
           },
           {
-            "label": "nvme_data",
+            "label": "esp-1",
+            "sizeMiB": 127,
+            "typeGuid": "C12A7328-F81F-11D2-BA4B-00A0C93EC93B"
+          },
+          {
+            "label": "boot-1",
+            "sizeMiB": 384
+          },
+          {
+            "label": "root-1",
             "sizeMiB": 0
           }
         ],
         "wipeTable": true
       },
       {
-        "device": "/dev/sdb",
-        "partitions": [
-          {
-            "label": "root",
-            "number": 4,
-            "resize": true,
-            "sizeMiB": 32768
-          }
-        ],
-        "wipeTable": false
-      },
-      {
         "device": "/dev/sdd",
         "partitions": [
           {
-            "label": "log",
+            "label": "bios-2",
+            "sizeMiB": 1,
+            "typeGuid": "21686148-6449-6E6F-744E-656564454649"
+          },
+          {
+            "label": "esp-2",
+            "sizeMiB": 127,
+            "typeGuid": "C12A7328-F81F-11D2-BA4B-00A0C93EC93B"
+          },
+          {
+            "label": "boot-2",
+            "sizeMiB": 384
+          },
+          {
+            "label": "root-2",
             "sizeMiB": 0
           }
         ],
@@ -56,17 +66,16 @@
         "device": "/dev/sda",
         "partitions": [
           {
-            "label": "var",
+            "label": "var-1",
             "sizeMiB": 0
           }
-        ],
-        "wipeTable": true
+        ]
       },
       {
         "device": "/dev/sdc",
         "partitions": [
           {
-            "label": "containters",
+            "label": "var-2",
             "sizeMiB": 0
           }
         ],
@@ -85,37 +94,45 @@
     ],
     "filesystems": [
       {
-        "device": "/dev/disk/by-partlabel/swap",
-        "format": "swap",
+        "device": "/dev/disk/by-partlabel/esp-1",
+        "format": "vfat",
+        "label": "esp-1",
         "wipeFilesystem": true
       },
       {
-        "device": "/dev/disk/by-partlabel/root",
-        "format": "xfs"
+        "device": "/dev/disk/by-partlabel/esp-2",
+        "format": "vfat",
+        "label": "esp-2",
+        "wipeFilesystem": true
       },
       {
-        "device": "/dev/disk/by-partlabel/nvme_data",
-        "format": "xfs",
-        "path": "/nvme_data",
-        "wipeFilesystem": false
+        "device": "/dev/md/md-boot",
+        "format": "ext4",
+        "label": "boot",
+        "wipeFilesystem": true
       },
       {
-        "device": "/dev/disk/by-partlabel/log",
+        "device": "/dev/mapper/root",
         "format": "xfs",
-        "path": "/var/log",
-        "wipeFilesystem": false
+        "label": "root",
+        "wipeFilesystem": true
       },
       {
-        "device": "/dev/disk/by-partlabel/var",
-        "format": "xfs",
-        "path": "/var",
-        "wipeFilesystem": false
+        "device": "/dev/md/root",
+        "format": "btrfs",
+        "wipeFilesystem": true
       },
       {
-        "device": "/dev/disk/by-partlabel/containers",
-        "format": "xfs",
-        "path": "/var/lib/containers",
-        "wipeFilesystem": false
+        "device": "/dev/md/md-var",
+        "format": "btrfs",
+        "path": "/var/var",
+        "wipeFilesystem": true
+      },
+      {
+        "device": "/dev/disk/by-partlabel/swap",
+        "format": "swap",
+        "label": "swap",
+        "wipeFilesystem": true
       }
     ],
     "links": [
@@ -123,29 +140,59 @@
         "path": "/etc/localtime",
         "target": "../usr/share/zoneinfo/America/Chicago"
       }
+    ],
+    "luks": [
+      {
+        "clevis": {
+          "tpm2": true
+        },
+        "device": "/dev/md/md-root",
+        "label": "luks-root",
+        "name": "root",
+        "wipeVolume": true
+      }
+    ],
+    "raid": [
+      {
+        "devices": [
+          "/dev/disk/by-partlabel/boot-1",
+          "/dev/disk/by-partlabel/boot-2"
+        ],
+        "level": "raid1",
+        "name": "md-boot",
+        "options": [
+          "--metadata=1.0"
+        ]
+      },
+      {
+        "devices": [
+          "/dev/disk/by-partlabel/root-1",
+          "/dev/disk/by-partlabel/root-2"
+        ],
+        "level": "raid1",
+        "name": "md-root"
+      },
+      {
+        "devices": [
+          "/dev/disk/by-partlabel/var-1",
+          "/dev/disk/by-partlabel/var-2"
+        ],
+        "level": "raid1",
+        "name": "md-var"
+      }
     ]
   },
   "systemd": {
     "units": [
       {
-        "contents": "# Generated by Butane\n[Unit]\nRequires=systemd-fsck@dev-disk-by\\x2dpartlabel-nvme_data.service\nAfter=systemd-fsck@dev-disk-by\\x2dpartlabel-nvme_data.service\n\n[Mount]\nWhere=/nvme_data\nWhat=/dev/disk/by-partlabel/nvme_data\nType=xfs\n\n[Install]\nRequiredBy=local-fs.target",
+        "contents": "# Generated by Butane\n[Unit]\nRequires=systemd-fsck@dev-md-md\\x2dvar.service\nAfter=systemd-fsck@dev-md-md\\x2dvar.service\n\n[Mount]\nWhere=/var/var\nWhat=/dev/md/md-var\nType=btrfs\n\n[Install]\nRequiredBy=local-fs.target",
         "enabled": true,
-        "name": "nvme_data.mount"
+        "name": "var-var.mount"
       },
       {
-        "contents": "# Generated by Butane\n[Unit]\nRequires=systemd-fsck@dev-disk-by\\x2dpartlabel-log.service\nAfter=systemd-fsck@dev-disk-by\\x2dpartlabel-log.service\n\n[Mount]\nWhere=/var/log\nWhat=/dev/disk/by-partlabel/log\nType=xfs\n\n[Install]\nRequiredBy=local-fs.target",
+        "contents": "# Generated by Butane\n[Swap]\nWhat=/dev/disk/by-partlabel/swap\n\n[Install]\nRequiredBy=swap.target",
         "enabled": true,
-        "name": "var-log.mount"
-      },
-      {
-        "contents": "# Generated by Butane\n[Unit]\nRequires=systemd-fsck@dev-disk-by\\x2dpartlabel-var.service\nAfter=systemd-fsck@dev-disk-by\\x2dpartlabel-var.service\n\n[Mount]\nWhere=/var\nWhat=/dev/disk/by-partlabel/var\nType=xfs\n\n[Install]\nRequiredBy=local-fs.target",
-        "enabled": true,
-        "name": "var.mount"
-      },
-      {
-        "contents": "# Generated by Butane\n[Unit]\nRequires=systemd-fsck@dev-disk-by\\x2dpartlabel-containers.service\nAfter=systemd-fsck@dev-disk-by\\x2dpartlabel-containers.service\n\n[Mount]\nWhere=/var/lib/containers\nWhat=/dev/disk/by-partlabel/containers\nType=xfs\n\n[Install]\nRequiredBy=local-fs.target",
-        "enabled": true,
-        "name": "var-lib-containers.mount"
+        "name": "dev-disk-by\\x2dpartlabel-swap.swap"
       }
     ]
   }
